@@ -13,7 +13,7 @@ if (!isset($_GET['token']) || $_GET['token'] !== TELEGRAM_TOKEN) {
 /**
  * Command Registrations
  */
-require_once '../commands/start_telegram.php';
+require_once '../commands/start.php';
 
 $telegram->addCommands([StartCommand::class]);
 $telegram->commandsHandler(true);

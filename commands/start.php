@@ -1,9 +1,12 @@
 <?php
+require_once '../class/integrated_command.php';
 
-/**
- * @return string
- */
-function cmdStart()
+class StartCommand extends IntegratedCommand
 {
-    return 'Hey, there! Welcome to our bot!';
+    protected string $name = 'start';
+
+    public function handler()
+    {
+        return 'Hey, there! Welcome to our bot!';
+    }
 }
