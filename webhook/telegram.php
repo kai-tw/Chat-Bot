@@ -1,8 +1,13 @@
 <?php
+
+use Telegram\Bot\Api;
+use Telegram\Bot\Commands\HelpCommand;
+
 require_once '../vendor/autoload.php';
 require_once '../config.php';
+require_once '../toolbox/common_utility.php';
 
-$telegram = new Telegram\Bot\Api(TELEGRAM_TOKEN);
+$telegram = new Api(TELEGRAM_TOKEN);
 $response = $telegram->setWebhook(['url' => WEBHOOK_ROOT_PATH . '/telegram.php?token=' . TELEGRAM_TOKEN]);
 
 if (!isset($_GET['token']) || $_GET['token'] !== TELEGRAM_TOKEN) {
@@ -13,7 +18,8 @@ if (!isset($_GET['token']) || $_GET['token'] !== TELEGRAM_TOKEN) {
 /**
  * Command Registrations
  */
-require_once '../commands/start.php';
+CommonUtility::includeAllFile('../commands');
 
-$telegram->addCommands([StartCommand::class]);
+$telegram->addCommands([TelegramStartCommand::class]);
+$telegram->addCommands([HelpCommand::class]);
 $telegram->commandsHandler(true);
