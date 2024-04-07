@@ -66,11 +66,14 @@ foreach ($parsedEvents->getEvents() as $event) {
     $result = $commandManager->execute($command);
 
     if ($result !== false) {
-        $messageApi->replyMessage(new ReplyMessageRequest([
-            'replyToken' => $event->getReplyToken(),
-            'messages' => [
-                (new TextMessage(['text' => $result]))->setType('text')
-            ]
-        ]));
+        $textMessage = new TextMessage();
+        $textMessage->setType(\LINE\Constants\MessageType::TEXT);
+        $textMessage->setText($result);
+
+        $request = new ReplyMessageRequest();
+        $request->setReplyToken($event->getReplyToken());
+        $request->setMessages([$textMessage]);
+
+        $messageApi->replyMessage($request);
     }
 }
