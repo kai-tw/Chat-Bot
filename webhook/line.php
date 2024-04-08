@@ -44,7 +44,10 @@ try {
  */
 CommonUtility::includeAllFile('../commands');
 $commandManager = new CommonCommandManager();
-$commandManager->addCommands([new StartCommand()]);
+$commandManager->addCommands([
+    new StartCommand(),
+    new LineUserIdCommand()
+]);
 
 foreach ($parsedEvents->getEvents() as $event) {
     if (!($event instanceof MessageEvent)) {
@@ -62,6 +65,7 @@ foreach ($parsedEvents->getEvents() as $event) {
     /**
      * Only Process commands.
      */
+    $commandManager->setLineEvent($event);
     $command = LineUtility::parseCommandName($text);
     $result = $commandManager->execute($command);
 

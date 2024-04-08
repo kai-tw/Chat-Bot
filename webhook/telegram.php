@@ -20,6 +20,9 @@ if (!isset($_GET['token']) || $_GET['token'] !== TELEGRAM_TOKEN) {
  */
 CommonUtility::includeAllFile('../commands');
 
-$telegram->addCommands([TelegramStartCommand::class]);
-$telegram->addCommands([HelpCommand::class]);
+$telegram->addCommands([
+    HelpCommand::class,
+    TelegramStartCommand::class,
+    TelegramUserIdCommand::class
+]);
 $telegram->commandsHandler(true);

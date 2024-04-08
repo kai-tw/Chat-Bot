@@ -1,9 +1,13 @@
 <?php
+
+use LINE\Webhook\Model\MessageEvent;
+
 require_once 'common_command.php';
 
 class CommonCommandManager
 {
     private array $commandList = [];
+    private MessageEvent $lineEvent;
 
     public function addCommand(CommonCommand $command)
     {
@@ -17,12 +21,18 @@ class CommonCommandManager
         }
     }
 
-    public function execute(string $name)
+    public function execute(string $name, array $arguments = [])
     {
         if (strlen($name) === 0 || !isset($this->commandList[$name])) {
             return false;
         }
-
+        $this->commandList[$name]->setLineEvent($this->lineEvent);
+        $this->commandList[$name]->setArguments($arguments);
         return $this->commandList[$name]->handle();
+    }
+
+    public function setLineEvent(MessageEvent $event)
+    {
+        $this->lineEvent = $event;
     }
 }

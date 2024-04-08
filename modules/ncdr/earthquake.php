@@ -6,9 +6,7 @@ class Earthquake
 {
     public static function parseXml($xml)
     {
-        $identifier = $xml->getElementsByTagName('identifier')[0]->nodeValue;
-
-        if (!preg_match('/^CWA-EQ\d{6}-\d{4}-\d{4}-\d{6}$/', $identifier)) {
+        if (!Earthquake::isEarthquakeReport($xml)) {
             // This is not a report related to an earthquake.
             return false;
         }
@@ -29,6 +27,12 @@ class Earthquake
         $db->close();
 
         return $messageList;
+    }
+
+    public static function isEarthquakeReport($xml)
+    {
+        $identifier = $xml->getElementsByTagName('identifier')[0]->nodeValue;
+        return preg_match('/^CWA-EQ\d{6}-\d{4}-\d{4}-\d{6}$/', $identifier);
     }
 
     private static function parseIntensity(\DOMDocument $xml)
