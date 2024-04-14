@@ -23,7 +23,6 @@ class LineUserIdCommand extends CommonCommand
     protected string $name = 'userid';
     public function handle()
     {
-        $source = $this->lineEvent->getSource();
-        return $source->getUserId() ?? 'Cannot get your userId.';
+        return $this->lineEvent->getSource()['userId'] ?? 'Cannot get your userId.';
     }
 }

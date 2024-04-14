@@ -2,11 +2,13 @@
 
 namespace NCDR;
 
+require_once 'utility.php';
+
 class Earthquake
 {
     public static function parseXml($xml)
     {
-        if (!Earthquake::isEarthquakeReport($xml)) {
+        if (!Earthquake::isReport($xml)) {
             // This is not a report related to an earthquake.
             return false;
         }
@@ -14,7 +16,7 @@ class Earthquake
         $db = new \mysqli(\DBHOST . ':' . \DBPORT, \DBUSER, \DBPASS, \DBNAME);
 
         $intensity = Earthquake::parseIntensity($xml);
-        $nameAreaMap = Earthquake::parseNameAreaMap($db);
+        $nameAreaMap = NCDRUtility::getNameAreaMap($db, AreaType::City);
         $messageList = [];
 
         foreach ($nameAreaMap as $username => $areaList) {
@@ -29,7 +31,7 @@ class Earthquake
         return $messageList;
     }
 
-    public static function isEarthquakeReport($xml)
+    public static function isReport($xml)
     {
         $identifier = $xml->getElementsByTagName('identifier')[0]->nodeValue;
         return preg_match('/^CWA-EQ\d{6}-\d{4}-\d{4}-\d{6}$/', $identifier);
@@ -47,31 +49,6 @@ class Earthquake
             }
         }
         return $intensity;
-    }
-
-    private static function parseNameAreaMap(\mysqli $db)
-    {
-        $sql = 'SELECT usr.username, area.area_name FROM `ncdr_users` usr INNER JOIN `ncdr_users_area` area ON usr.username = area.username WHERE `earthquake` = 1  
-ORDER BY `usr`.`username` ASC';
-        $query = $db->query($sql);
-
-        $nameAreaMap = [];
-        while ($item = $query->fetch_assoc()) {
-            $username = $item['username'];
-            $areaName = mb_substr($item['area_name'], 0, 3);
-
-            // If it doesn't initialize, initializa it.
-            if (!isset($nameAreaMap[$item['username']])) {
-                $nameAreaMap[$item['username']] = [];
-            }
-
-            // If it doesn't duplicated, push it into the map.
-            if (!in_array($areaName, $nameAreaMap[$username])) {
-                array_push($nameAreaMap[$username], $areaName);
-            }
-        }
-
-        return ($nameAreaMap);
     }
 
     private static function messageConstructor(\DOMDocument $xml, array $intensity, array $areaList)

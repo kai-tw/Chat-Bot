@@ -1,4 +1,5 @@
 <?php
+exit(0);
 
 use GuzzleHttp\Client;
 use LINE\Clients\MessagingApi\Configuration;
@@ -9,12 +10,11 @@ require_once '../vendor/autoload.php';
 require_once '../config.php';
 require_once '../class/user.php';
 require_once '../modules/ncdr/earthquake.php';
+require_once '../modules/ncdr/heat.php';
 require_once '../modules/ncdr/utility.php';
 
-ini_set('display_errors', FALSE);
-header('Content-Type: text/xml; charset=utf-8');
-echo '<?xml version="1.0" encoding="utf-8" ?><Data><Status>true</Status></Data>';
-$url = 'php://input';
+header('Content-Type: text/plain; charset=utf-8');
+$url = 'https://alerts.ncdr.nat.gov.tw/Capstorage/CWA/2023/heatWave/fifows_heat_202307071729.cap';
 $file = file_get_contents($url);
 if ($file !== '' && $file !== '<?xml version="1.0" encoding="utf-8"?><alert xmlns="urn:oasis:names:tc:emergency:cap:1.2"><Test>Test</Test></alert>') {
     $xml = new DOMDocument;
@@ -24,14 +24,6 @@ if ($file !== '' && $file !== '<?xml version="1.0" encoding="utf-8"?><alert xmln
      * Telegram Api Initialization
      */
     $telegram = new Api(TELEGRAM_TOKEN);
-
-    /**
-     * Inform Admin that received a report.
-     */
-    $identifier = $xml->getElementsByTagName('identifier')[0]->nodeValue;
-    $sender = $xml->getElementsByTagName('sender')[0]->nodeValue;
-    $sent = $xml->getElementsByTagName('sent')[0]->nodeValue;
-    \NCDR\NCDRUtility::sendTelegramMessage($telegram, ADMIN_ACCOUNT, "{$identifier}\n{$sender}\n{$sent}");
 
     $messageList = [];
 
@@ -64,7 +56,9 @@ if ($file !== '' && $file !== '<?xml version="1.0" encoding="utf-8"?><alert xmln
 
             $message = $messageList[$username];
 
-            \NCDR\NCDRUtility::sendLineMessage($messageApi, $item['line_id'], $message);
+            echo $message, PHP_EOL, PHP_EOL;
+
+            // \NCDR\NCDRUtility::sendLineMessage($messageApi, $item['line_id'], $message);
             \NCDR\NCDRUtility::sendTelegramMessage($telegram, $item['telegram_id'], $message);
         }
         $db->close();
