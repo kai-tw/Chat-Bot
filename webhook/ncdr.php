@@ -9,6 +9,7 @@ require_once '../vendor/autoload.php';
 require_once '../config.php';
 require_once '../class/user.php';
 require_once '../modules/ncdr/earthquake.php';
+require_once '../modules/ncdr/heat.php';
 require_once '../modules/ncdr/utility.php';
 
 ini_set('display_errors', FALSE);
