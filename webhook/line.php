@@ -46,7 +46,8 @@ CommonUtility::includeAllFile('../commands');
 $commandManager = new CommonCommandManager();
 $commandManager->addCommands([
     new StartCommand(),
-    new LineUserIdCommand()
+    new LineUserIdCommand(),
+    new LineGroupIdCommand()
 ]);
 
 foreach ($parsedEvents->getEvents() as $event) {

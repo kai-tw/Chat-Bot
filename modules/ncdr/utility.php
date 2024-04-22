@@ -45,7 +45,7 @@ ORDER BY `usr`.`username` ASC';
 
     public static function sendLineMessage(MessagingApiApi $messageApi, ?string $lineId, string $message)
     {
-        if (!isset($lineId) || strlen($lineId) !== 32) {
+        if (!isset($lineId) || strlen($lineId) !== 33) {
             return;
         }
 
@@ -63,14 +63,15 @@ ORDER BY `usr`.`username` ASC';
 
         try {
             $messageApi->pushMessage($request);
-        } catch (RequestException $e) {
-        } catch (ConnectException $e) {
+        } catch (\Exception $e) {
+            return $e;
         }
     }
 
     public static function sendTelegramMessage(Api $telegram, ?string $telegramId, string $message)
     {
-        if (!isset($telegramId) || strlen($telegramId) !== 10) {
+        $idLength = strlen($telegramId);
+        if (!isset($telegramId) || ($idLength !== 10 && $idLength !== 11)) {
             return;
         }
 

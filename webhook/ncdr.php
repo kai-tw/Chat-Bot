@@ -26,13 +26,23 @@ if ($file !== '' && $file !== '<?xml version="1.0" encoding="utf-8"?><alert xmln
      */
     $telegram = new Api(TELEGRAM_TOKEN);
 
+    $db = new \mysqli(\DBHOST . ':' . \DBPORT, \DBUSER, \DBPASS, \DBNAME);
+    $statement = $db->prepare("INSERT INTO `ncdr_rawdata`(`identifier`, `xml`) VALUES (?, ?)");
+    $statement->bind_param("ss", $identifier, $rawData);
+    $rawData = $file;
+
     /**
      * Inform Admin that received a report.
      */
     $identifier = $xml->getElementsByTagName('identifier')[0]->nodeValue;
     $sender = $xml->getElementsByTagName('sender')[0]->nodeValue;
     $sent = $xml->getElementsByTagName('sent')[0]->nodeValue;
-    \NCDR\NCDRUtility::sendTelegramMessage($telegram, ADMIN_ACCOUNT, "{$identifier}\n{$sender}\n{$sent}");
+    $telegram->sendMessage([
+        'chat_id' => ADMIN_ACCOUNT,
+        'text' => "{$identifier}\n{$sender}\n{$sent}"
+    ]);
+
+    $statement->execute();
 
     $messageList = [];
 
@@ -53,7 +63,6 @@ if ($file !== '' && $file !== '<?xml version="1.0" encoding="utf-8"?><alert xmln
         $lineConfig->setAccessToken(LINE_TOKEN);
         $messageApi = new MessagingApiApi($client, $lineConfig);
 
-        $db = new \mysqli(\DBHOST . ':' . \DBPORT, \DBUSER, \DBPASS, \DBNAME);
         $query = $db->query('SELECT usr.username, usr.line_id, usr.telegram_id FROM `users` usr INNER JOIN `ncdr_users` nusr ON usr.username = nusr.username WHERE nusr.earthquake = 1;');
         while ($item = $query->fetch_assoc()) {
             $username = $item['username'];
@@ -65,9 +74,17 @@ if ($file !== '' && $file !== '<?xml version="1.0" encoding="utf-8"?><alert xmln
 
             $message = $messageList[$username];
 
-            \NCDR\NCDRUtility::sendLineMessage($messageApi, $item['line_id'], $message);
+            $lineException =
+                \NCDR\NCDRUtility::sendLineMessage($messageApi, $item['line_id'], $message);
             \NCDR\NCDRUtility::sendTelegramMessage($telegram, $item['telegram_id'], $message);
+
+            if ($lineException) {
+                $telegram->sendMessage([
+                    'chat_id' => ADMIN_ACCOUNT,
+                    'text' => $lineException->getMessage()
+                ]);
+            }
         }
-        $db->close();
     }
+    $db->close();
 }

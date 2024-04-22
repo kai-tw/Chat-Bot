@@ -2,6 +2,8 @@
 exit(0);
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Exception\RequestException;
 use LINE\Clients\MessagingApi\Configuration;
 use LINE\Clients\MessagingApi\Api\MessagingApiApi;
 use Telegram\Bot\Api;
@@ -14,7 +16,7 @@ require_once '../modules/ncdr/heat.php';
 require_once '../modules/ncdr/utility.php';
 
 header('Content-Type: text/plain; charset=utf-8');
-$url = 'https://alerts.ncdr.nat.gov.tw/Capstorage/CWA/2023/heatWave/fifows_heat_202307071729.cap';
+$url = 'sample.xml';
 $file = file_get_contents($url);
 if ($file !== '' && $file !== '<?xml version="1.0" encoding="utf-8"?><alert xmlns="urn:oasis:names:tc:emergency:cap:1.2"><Test>Test</Test></alert>') {
     $xml = new DOMDocument;
@@ -58,8 +60,16 @@ if ($file !== '' && $file !== '<?xml version="1.0" encoding="utf-8"?><alert xmln
 
             echo $message, PHP_EOL, PHP_EOL;
 
-            // \NCDR\NCDRUtility::sendLineMessage($messageApi, $item['line_id'], $message);
+            $lineException =
+                \NCDR\NCDRUtility::sendLineMessage($messageApi, $item['line_id'], $message);
             \NCDR\NCDRUtility::sendTelegramMessage($telegram, $item['telegram_id'], $message);
+
+            if ($lineException) {
+                $telegram->sendMessage([
+                    'chat_id' => ADMIN_ACCOUNT,
+                    'text' => $lineException->getMessage()
+                ]);
+            }
         }
         $db->close();
     }

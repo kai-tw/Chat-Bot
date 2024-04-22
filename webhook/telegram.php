@@ -23,6 +23,7 @@ CommonUtility::includeAllFile('../commands');
 $telegram->addCommands([
     HelpCommand::class,
     TelegramStartCommand::class,
-    TelegramUserIdCommand::class
+    TelegramUserIdCommand::class,
+    TelegramGroupIdCommand::class
 ]);
 $telegram->commandsHandler(true);
