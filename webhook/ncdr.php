@@ -37,10 +37,7 @@ if ($file !== '' && $file !== '<?xml version="1.0" encoding="utf-8"?><alert xmln
     $identifier = $xml->getElementsByTagName('identifier')[0]->nodeValue;
     $sender = $xml->getElementsByTagName('sender')[0]->nodeValue;
     $sent = $xml->getElementsByTagName('sent')[0]->nodeValue;
-    $telegram->sendMessage([
-        'chat_id' => ADMIN_ACCOUNT,
-        'text' => "{$identifier}\n{$sender}\n{$sent}"
-    ]);
+    $logMessage = "{$identifier}\n{$sender}\n{$sent}";
 
     $statement->execute();
 
@@ -79,12 +76,14 @@ if ($file !== '' && $file !== '<?xml version="1.0" encoding="utf-8"?><alert xmln
             \NCDR\NCDRUtility::sendTelegramMessage($telegram, $item['telegram_id'], $message);
 
             if ($lineException) {
-                $telegram->sendMessage([
-                    'chat_id' => ADMIN_ACCOUNT,
-                    'text' => $lineException->getMessage()
-                ]);
+                $logMessage .= "\n" . $lineException->getMessage();
             }
         }
     }
     $db->close();
+
+    $telegram->sendMessage([
+        'chat_id' => ADMIN_ACCOUNT,
+        'text' => $logMessage
+    ]);
 }
